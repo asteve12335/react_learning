@@ -1,5 +1,7 @@
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Sidebar from "./components/layout/Sidebar";
+import ReportIssue from "./pages/ReportIssue";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -11,10 +13,17 @@ function App() {
           <Sidebar />
         </div>
         <main className="col p-4">
-          <h2 className="display-5 mb-3">Welcome to CivicLens</h2>
-          <p className="lead">
-            Start by checking the dashboard or reporting an issue.
-          </p>
+          <Routes>
+            <Route path="/" element={
+              <>
+                <h2 className="display-5 mb-3">Welcome to CivicLens</h2>
+                <p className="lead">
+                  Start by checking the dashboard or reporting an issue.
+                </p>
+              </>
+            } />
+            <Route path="/report" element={<ReportIssue />} />
+          </Routes>
         </main>
       </div>
     </div>

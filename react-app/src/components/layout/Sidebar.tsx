@@ -1,14 +1,20 @@
-import styles from "../../styles/Sidebar.module.css";
+import React from "react";
 
-function Sidebar() {
-  return (
-    <aside className={styles.sidebar}>
-      <a href="/" className={styles.link}>Dashboard</a>
-      <a href="/report" className={styles.link}>Report Issue</a>
-      <a href="/issues" className={styles.link}>Issues</a>
-      <a href="/analytics" className={styles.link}>Analytics</a>
-    </aside>
-  );
-}
+const Sidebar: React.FC = () => (
+  <div className="d-flex flex-column p-3 h-100">
+    <h5 className="mb-4">Menu</h5>
+    <ul className="nav nav-pills flex-column">
+      <li className="nav-item mb-2">
+        <a className="nav-link" href="/dashboard">Dashboard</a>
+      </li>
+      <li className="nav-item mb-2">
+        <a className="nav-link" href="/report">Report Issue</a>
+      </li>
+      <li className="nav-item mb-2">
+        <a className="nav-link" href="/settings">Settings</a>
+      </li>
+    </ul>
+  </div>
+);
 
 export default Sidebar;

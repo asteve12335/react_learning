@@ -15,17 +15,23 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-function LocationPicker({ setLocation }: { setLocation: (loc: string) => void }) {
-  const [position, setPosition] = useState<L.LatLng | null>(null);
-
+function LocationPicker({
+  markerPosition,
+  setMarkerPosition,
+  setLocation,
+}: {
+  markerPosition: L.LatLng | null;
+  setMarkerPosition: (pos: L.LatLng) => void;
+  setLocation: (loc: string) => void;
+}) {
   useMapEvents({
     click(e) {
-      setPosition(e.latlng);
+      setMarkerPosition(e.latlng);
       setLocation(`${e.latlng.lat},${e.latlng.lng}`);
     },
   });
 
-  return position ? <Marker position={position} /> : null;
+  return markerPosition ? <Marker position={markerPosition} /> : null;
 }
 
 function ReportIssue() {
@@ -37,6 +43,8 @@ function ReportIssue() {
   const [location, setLocation] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([6.5244, 3.3792]); // Default: Lagos
+  const [markerPosition, setMarkerPosition] = useState<L.LatLng | null>(null);
 
   useEffect(() => {
     if (success) {
@@ -44,6 +52,24 @@ function ReportIssue() {
       return () => clearTimeout(timer);
     }
   }, [success]);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setMapCenter([lat, lng]);
+          const latLng = L.latLng(lat, lng);
+          setMarkerPosition(latLng); // <-- Add this line
+          setLocation(`${lat},${lng}`); // <-- Optionally set location as well
+        },
+        () => {
+          // If denied or error, keep default
+        }
+      );
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,7 +184,7 @@ function ReportIssue() {
         <div className="mb-3">
           <label className="form-label">Pick Location on Map:</label>
           <MapContainer
-            center={[6.5244, 3.3792]} // Lagos, Nigeria as default
+            center={mapCenter} // User location as default
             zoom={13}
             style={{ height: "300px", width: "100%" }}
           >
@@ -166,7 +192,11 @@ function ReportIssue() {
               attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <LocationPicker setLocation={setLocation} />
+            <LocationPicker
+              markerPosition={markerPosition}
+              setMarkerPosition={setMarkerPosition}
+              setLocation={setLocation}
+            />
           </MapContainer>
           {location && (
             <div className="text-muted small mt-1">

@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,6 +13,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+UPLOAD_DIR = "uploads/"
+issues = []
+
+@app.get("/")
+def read_root():
+    return {"message": "FastAPI backend is running!"}
+
 @app.post("/report-issue/")
 async def report_issue(
     title: str = Form(...),
@@ -19,16 +27,31 @@ async def report_issue(
     category: str = Form(...),
     urgent: bool = Form(...),
     location: str = Form(...),
-    photo: UploadFile = File(...)
+    photo: UploadFile = File(None)
 ):
-    # Here you can save the data to a database and the file to disk/cloud
-    # For now, just return a success message
-    return {
-        "message": "Issue reported successfully",
+    # Save uploaded file if present
+    photo_path = None
+    if photo and photo.filename:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        photo_path = os.path.join(UPLOAD_DIR, photo.filename)
+        with open(photo_path, "wb") as buffer:
+            buffer.write(await photo.read())
+
+    issue = {
         "title": title,
         "description": description,
         "category": category,
         "urgent": urgent,
         "location": location,
-        "photo": photo.filename if photo else None
+        "photo_filename": photo.filename if photo else None
     }
+    issues.append(issue)
+    print("Received issue:", issue)
+    return {
+        "message": "Issue reported successfully",
+        "issue": issue
+    }
+
+@app.get("/report-issues/")
+def get_issues():
+    return {"issues": issues}

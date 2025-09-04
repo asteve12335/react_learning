@@ -71,46 +71,50 @@ function ReportIssue() {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
+  // ...inside your handleSubmit function in ReportIssue.tsx
 
-    if (!title || !description || !category || !location) {
-      setError("Please fill in all required fields.");
-      return;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError(null);
+  setSuccess(null);
+
+  if (!title || !description || !category || !location) {
+    setError("Please fill in all required fields.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  formData.append("category", category);
+  formData.append("urgent", String(urgent));
+  if (photo) formData.append("photo", photo);
+  formData.append("location", location);
+
+  try {
+    const response = await fetch("http://localhost:8000/report-issue/", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    console.log(data); // <--- This will show the submitted data in the console
+
+    if (!response.ok) {
+      throw new Error("Failed to submit issue.");
     }
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("category", category);
-    formData.append("urgent", String(urgent));
-    if (photo) {
-      const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
-      if (!allowedTypes.includes(photo.type)) {
-        setError("Invalid file type. Please upload a JPEG, PNG, JPG, or GIF image.");
-        return;
-      }
-      if (photo.size > 5 * 1024 * 1024) {
-        setError("File size exceeds 5MB limit.");
-        return;
-      }
-      formData.append("photo", photo);
-    }
-    formData.append("location", location);
-
-    // Submit the form data to the server
-    console.log("Submitting issue:", { title, description, location, category, photo });
-    setSuccess("Issue submitted successfully!");
-
+    setSuccess(data.message || "Issue submitted successfully!");
     setTitle("");
     setDescription("");
     setCategory("");
     setUrgent(false);
     setPhoto(null);
     setLocation("");
-  };
+    setMarkerPosition(null); // if you use markerPosition
+  } catch (err: any) {
+    setError(err.message || "An error occurred.");
+  }
+};
 
   return (
     <div className="container mt-4">

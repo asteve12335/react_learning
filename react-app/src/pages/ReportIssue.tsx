@@ -45,6 +45,7 @@ function ReportIssue() {
   const [success, setSuccess] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([6.5244, 3.3792]); // Default: Lagos
   const [markerPosition, setMarkerPosition] = useState<L.LatLng | null>(null);
+  const [submittedIssue, setSubmittedIssue] = useState<any>(null);
 
   useEffect(() => {
     if (success) {
@@ -104,6 +105,11 @@ const handleSubmit = async (e: React.FormEvent) => {
     }
 
     setSuccess(data.message || "Issue submitted successfully!");
+    setSubmittedIssue(data.issue); // <-- Store the submitted issue
+
+    
+
+    // Reset form fields
     setTitle("");
     setDescription("");
     setCategory("");
@@ -122,6 +128,22 @@ const handleSubmit = async (e: React.FormEvent) => {
 
       {error && <div className="alert alert-danger">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
+
+      {/* Display submitted issue here */}
+      {submittedIssue && (
+        <div className="card my-3">
+          <div className="card-body">
+            <h5 className="card-title">{submittedIssue.title}</h5>
+            <p className="card-text"><strong>Description:</strong> {submittedIssue.description}</p>
+            <p className="card-text"><strong>Category:</strong> {submittedIssue.category}</p>
+            <p className="card-text"><strong>Urgent:</strong> {submittedIssue.urgent ? "Yes" : "No"}</p>
+            <p className="card-text"><strong>Location:</strong> {submittedIssue.location}</p>
+            {submittedIssue.photo_filename && (
+            <p className="card-text"><strong>Photo:</strong> {submittedIssue.photo_filename}</p>
+          )}
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
